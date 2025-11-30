@@ -6,56 +6,51 @@
     <title>Pedidos Wings & Pizza</title>
     <style>
         :root {
-            --primary: #ff6b00; /* Naranja para comida */
+            --primary: #ff6b00;
             --dark: #333;
             --light: #f4f4f4;
             --admin-color: #007bff;
         }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--light); padding-bottom: 90px; }
         
-        /* Encabezado */
         header { background-color: var(--dark); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         h1 { margin: 0; font-size: 1.4rem; }
         
-        /* Botón Modo Admin */
         .admin-toggle { font-size: 0.8rem; background: #555; border: none; color: white; padding: 5px 10px; border-radius: 5px; margin-top: 5px; cursor: pointer; }
         .admin-mode-active { background-color: var(--admin-color); }
 
-        /* Categorías */
         .categories { display: flex; overflow-x: auto; background: white; padding: 10px; gap: 10px; white-space: nowrap; -webkit-overflow-scrolling: touch; }
         .cat-btn { padding: 10px 20px; border: none; border-radius: 20px; background: #eee; cursor: pointer; font-weight: bold; color: #555; }
         .cat-btn.active { background-color: var(--primary); color: white; }
 
-        /* Lista de Productos */
         .product-list { padding: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between; }
         .card h3 { margin: 0 0 10px 0; font-size: 1rem; color: var(--dark); }
         
         .price-display { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
         
-        /* Select de Salsas */
-        .sauce-select { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem; background: white; }
+        /* ESTILO NUEVO PARA SALSAS (Checkboxes) */
+        .sauce-container { text-align: left; background: #f9f9f9; padding: 8px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #eee; }
+        .sauce-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block; color: #555; }
+        .sauce-option { display: block; font-size: 0.9rem; margin-bottom: 3px; cursor: pointer; }
+        .sauce-option input { margin-right: 5px; transform: scale(1.2); }
 
         .add-btn { background-color: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
         .add-btn:active { transform: scale(0.95); }
 
-        /* Controles de Admin */
         .admin-controls { display: none; border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px; }
         .input-price { width: 70px; padding: 5px; }
         .delete-btn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: right; }
         
-        /* Formulario nuevo producto (Solo Admin) */
         #newProductForm { display: none; background: #e9ecef; padding: 20px; margin: 15px; border-radius: 10px; border: 2px solid var(--admin-color); }
         #newProductForm input, #newProductForm select { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; }
 
-        /* Carrito Flotante */
         .cart-float { position: fixed; bottom: 20px; right: 20px; left: 20px; background-color: var(--dark); color: white; padding: 15px 25px; border-radius: 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; z-index: 90; }
         
-        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; }
         .modal-content { background: white; margin: 10% auto; width: 90%; max-width: 400px; padding: 25px; border-radius: 15px; position: relative; max-height: 80vh; overflow-y: auto; }
         .cart-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 0.95rem; }
-        .item-details { color: #666; font-size: 0.85rem; font-style: italic; }
+        .item-details { color: #666; font-size: 0.85rem; font-style: italic; display: block; margin-top: 2px; }
         .whatsapp-btn { background-color: #25D366; color: white; text-decoration: none; display: block; text-align: center; padding: 15px; border-radius: 10px; margin-top: 20px; font-weight: bold; font-size: 1.1rem; }
     </style>
 </head>
@@ -108,13 +103,10 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN: CAMBIA TU NÚMERO AQUÍ
-        const MY_PHONE = "573000000000"; 
-
-        // Salsas disponibles
+        // --- CONFIGURACIÓN ---
+        const MY_PHONE = "573000000000"; // PON TU NÚMERO AQUÍ
         const SAUCES = ["BBQ", "BBQ PICANTE", "MIEL MOSTAZA", "MARACUYA", "MORA"];
 
-        // Productos Iniciales (Uno por categoría como pediste)
         const defaultProducts = [
             { id: 1, name: "Combo 6 Alas + Papas", price: 18000, category: "COMBOS DE ALITAS" },
             { id: 2, name: "Pizza Peperoni", price: 25000, category: "PIZZAS" },
@@ -122,32 +114,29 @@
             { id: 4, name: "Porción Papas", price: 5000, category: "ADICIONES" }
         ];
 
-        // Cargar productos de memoria o usar default
         let products = JSON.parse(localStorage.getItem('myAppProducts')) || defaultProducts;
         let cart = [];
         let isAdmin = false;
 
-        // Renderizar (Mostrar) productos
         function renderProducts(filter = 'COMBOS DE ALITAS') {
             const container = document.getElementById('productsContainer');
             container.innerHTML = '';
-
-            // Filtrar productos
             const filtered = products.filter(p => p.category === filter);
 
             filtered.forEach(p => {
-                // Crear HTML de opciones de salsa si es Alitas
+                // Generar Salsas (Checkboxes) solo si es Alitas
                 let sauceHTML = '';
                 if (p.category === 'COMBOS DE ALITAS') {
-                    sauceHTML = `
-                        <select id="sauce-${p.id}" class="sauce-select">
-                            <option value="" disabled selected>Elige tu salsa...</option>
-                            ${SAUCES.map(s => `<option value="${s}">${s}</option>`).join('')}
-                        </select>
-                    `;
+                    sauceHTML = `<div class="sauce-container" id="sauces-${p.id}">
+                        <span class="sauce-title">Elige tus salsas (Opcional):</span>
+                        ${SAUCES.map(s => `
+                            <label class="sauce-option">
+                                <input type="checkbox" value="${s}"> ${s}
+                            </label>
+                        `).join('')}
+                    </div>`;
                 }
 
-                // Crear tarjeta
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
@@ -158,7 +147,6 @@
                     </div>
                     <div>
                         <button class="add-btn" onclick="addToCart(${p.id})">AGREGAR +</button>
-                        
                         <div class="admin-controls" style="display: ${isAdmin ? 'block' : 'none'}">
                             <input type="number" value="${p.price}" onchange="updatePrice(${p.id}, this.value)" class="input-price">
                             <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️</button>
@@ -168,36 +156,36 @@
                 container.appendChild(card);
             });
 
-            // Actualizar botones de categoría
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if(btn.innerText === filter) btn.classList.add('active');
             });
         }
 
-        // Función para agregar al carrito
         function addToCart(id) {
             const product = products.find(p => p.id === id);
-            let selectedSauce = null;
+            let selectedSauces = [];
 
-            // Verificar si requiere salsa
+            // Si es Alitas, buscar qué casillas marcó el usuario
             if (product.category === 'COMBOS DE ALITAS') {
-                const sauceSelect = document.getElementById(`sauce-${id}`);
-                if (sauceSelect.value === "") {
-                    alert("⚠️ Por favor elige una salsa para las alitas.");
-                    return;
-                }
-                selectedSauce = sauceSelect.value;
+                const checkboxes = document.querySelectorAll(`#sauces-${id} input:checked`);
+                checkboxes.forEach(box => {
+                    selectedSauces.push(box.value);
+                });
+                
+                // Limpiar casillas después de agregar (opcional, para estética)
+                document.querySelectorAll(`#sauces-${id} input`).forEach(box => box.checked = false);
             }
 
-            cart.push({ ...product, sauce: selectedSauce });
+            // Agregar al carrito
+            cart.push({ ...product, sauces: selectedSauces }); // Guardamos el array de salsas
             updateCartUI();
             
-            // Feedback visual pequeño
-            alert("✅ Agregado: " + product.name);
+            // Mensaje simple
+            const salsaMsg = selectedSauces.length > 0 ? ` con ${selectedSauces.join(', ')}` : '';
+            alert(`✅ Agregado: ${product.name}${salsaMsg}`);
         }
 
-        // Actualizar Carrito y Totales
         function updateCartUI() {
             document.getElementById('cartCount').innerText = cart.length;
             const total = cart.reduce((sum, item) => sum + parseInt(item.price), 0);
@@ -208,18 +196,27 @@
             if(cart.length === 0) {
                 container.innerHTML = "<p>Tu carrito está vacío 😢</p>";
             } else {
-                container.innerHTML = cart.map((item, index) => `
+                container.innerHTML = cart.map((item, index) => {
+                    // Mostrar salsas si existen
+                    let saucesText = '';
+                    if (item.sauces && item.sauces.length > 0) {
+                        saucesText = `<span class="item-details">Salsas: ${item.sauces.join(', ')}</span>`;
+                    } else if (item.category === 'COMBOS DE ALITAS') {
+                        saucesText = `<span class="item-details">Sin salsa</span>`;
+                    }
+
+                    return `
                     <div class="cart-item">
                         <div style="display:flex; justify-content:space-between;">
                             <strong>${item.name}</strong>
                             <span>$${parseInt(item.price).toLocaleString()}</span>
                         </div>
-                        ${item.sauce ? `<div class="item-details">Salsa: ${item.sauce}</div>` : ''}
+                        ${saucesText}
                         <div style="text-align:right; margin-top:5px;">
                             <span style="color:red; cursor:pointer; font-size:0.8rem;" onclick="removeFromCart(${index})">Eliminar</span>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
             updateWhatsAppLink(total);
         }
@@ -235,35 +232,32 @@
         }
 
         function filterProducts(category) {
-            // Guardamos la categoría actual en una variable global o atributo para saber qué renderizar al editar
             window.currentCategory = category;
             renderProducts(category);
         }
 
-        // Generar enlace de WhatsApp
         function updateWhatsAppLink(total) {
             let msg = "Hola! 🙋‍♂️ Quiero pedir:%0A%0A";
             cart.forEach(item => {
                 msg += `▪️ ${item.name} ($${parseInt(item.price).toLocaleString()})`;
-                if(item.sauce) msg += ` - Salsa: ${item.sauce}`;
+                if(item.sauces && item.sauces.length > 0) {
+                    msg += ` (Salsas: ${item.sauces.join(', ')})`;
+                }
                 msg += `%0A`;
             });
             msg += `%0A💰 *TOTAL: $${total.toLocaleString()}*`;
             document.getElementById('whatsappLink').href = `https://wa.me/${MY_PHONE}?text=${msg}`;
         }
 
-        // --- FUNCIONES DE ADMINISTRADOR ---
-
+        // --- FUNCIONES ADMIN ---
         function toggleAdminMode() {
             isAdmin = !isAdmin;
             const btn = document.querySelector('.admin-toggle');
             const form = document.getElementById('newProductForm');
-            
             if(isAdmin) {
                 btn.classList.add('admin-mode-active');
                 btn.innerText = "✅ Modo Guardar";
                 form.style.display = "block";
-                alert("Modo Dueño Activado: Ahora puedes cambiar precios, borrar productos o agregar nuevos abajo.");
             } else {
                 btn.classList.remove('admin-mode-active');
                 btn.innerText = "🔧 Modo Dueño";
@@ -274,14 +268,11 @@
 
         function updatePrice(id, newPrice) {
             const product = products.find(p => p.id === id);
-            if(product) {
-                product.price = parseInt(newPrice);
-                saveData(); // Guardar cambios
-            }
+            if(product) { product.price = parseInt(newPrice); saveData(); }
         }
 
         function deleteProduct(id) {
-            if(confirm("¿Seguro que quieres eliminar este producto?")) {
+            if(confirm("¿Eliminar?")) {
                 products = products.filter(p => p.id !== id);
                 saveData();
                 renderProducts(window.currentCategory);
@@ -292,28 +283,21 @@
             const name = document.getElementById('newProdName').value;
             const price = document.getElementById('newProdPrice').value;
             const cat = document.getElementById('newProdCat').value;
-
-            if(!name || !price) {
-                alert("Llena el nombre y el precio");
-                return;
-            }
-
-            const newId = Date.now(); // Generar ID único basado en la hora
+            if(!name || !price) return alert("Faltan datos");
+            
+            const newId = Date.now();
             products.push({ id: newId, name: name, price: parseInt(price), category: cat });
             saveData();
-            
-            // Limpiar form
             document.getElementById('newProdName').value = '';
             document.getElementById('newProdPrice').value = '';
             alert("Producto Agregado!");
-            filterProducts(cat); // Ir a la categoría del nuevo producto
+            filterProducts(cat);
         }
 
         function saveData() {
             localStorage.setItem('myAppProducts', JSON.stringify(products));
         }
 
-        // Inicializar
         window.currentCategory = 'COMBOS DE ALITAS';
         renderProducts();
     </script>
